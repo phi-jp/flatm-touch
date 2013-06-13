@@ -45,11 +45,6 @@ tm.define("GameScene", {
     init: function() {
         this.superInit();
 
-        var self = this;
-
-        // カレント数
-        self.currentNumber = 1;
-
         // ピースグループ
         this.pieceGroup = tm.app.CanvasElement();
         this.addChild(this.pieceGroup);
@@ -68,20 +63,6 @@ tm.define("GameScene", {
                 // 座標を設定
                 piece.x = j * 125 + PIECE_OFFSET_X;
                 piece.y = i * 125 + PIECE_OFFSET_Y;
-                // タッチ時のイベントリスナーを登録
-                piece.onpointingstart = function() {
-                    // 正解かどうかの判定
-                    if (this.number === self.currentNumber) {
-                        // クリアかどうかの判定
-                        if (self.currentNumber === PIECE_NUM) {
-                            // 結果表示
-                            var time = (self.app.frame/self.app.fps)|0;
-                            alert("GameClear: {0}".format(time));
-                        }
-                        self.currentNumber += 1;// インクリメント
-                        this.disable();         // ボタン無効
-                    }
-                };
             }
         }
     },
@@ -111,18 +92,5 @@ tm.define("Piece", {
             .setFontFamily(FONT_FAMILY_FLAT)
             .setAlign("center")
             .setBaseline("middle");
-        },
-
-    disable: function() {
-        this.setInteractive(false);
-
-        var self = this;
-        this.tweener
-            .clear()
-            .to({scaleX:0}, 100)
-            .call(function() {
-                self.canvas.clearColor("rgb(100, 100, 100)");
-            }.bind(this))
-            .to({scaleX:1, alpha:0.5}, 100)
-    }
+    },
 });
