@@ -111,7 +111,7 @@ tm.define("Piece", {
             .setFontFamily(FONT_FAMILY_FLAT)
             .setAlign("center")
             .setBaseline("middle");
-        },
+    },
 
     disable: function() {
         this.setInteractive(false);
