@@ -10,16 +10,6 @@ var SCREEN_HEIGHT   = 960;              // スクリーン高さ
 var SCREEN_CENTER_X = SCREEN_WIDTH/2;   // スクリーン幅の半分
 var SCREEN_CENTER_Y = SCREEN_HEIGHT/2;  // スクリーン高さの半分
 
-var PIECE_NUM_X     = 5;                // ピースの列数
-var PIECE_NUM_Y     = 5;                // ピースの行数
-var PIECE_NUM       = PIECE_NUM_X*PIECE_NUM_Y;  // ピース数
-var PIECE_OFFSET_X  = 90;               // ピースオフセットX　
-var PIECE_OFFSET_Y  = 240;              // ピースオフセットY
-var PIECE_WIDTH     = 120;              // ピースの幅
-var PIECE_HEIGHT    = 120;              // ピースの高さ
-
-var FONT_FAMILY_FLAT= "'Helvetica-Light' 'Meiryo' sans-serif";  // フラットデザイン用フォント
-
 /*
  * main
  */
@@ -44,53 +34,7 @@ tm.define("GameScene", {
 
     init: function() {
         this.superInit();
-
-        // ピースグループ
-        this.pieceGroup = tm.app.CanvasElement();
-        this.addChild(this.pieceGroup);
-
-        // 数字配列
-        var nums = [].range(1, PIECE_NUM+1);  // 1~25
-        nums.shuffle(); // シャッフル
-
-        // ピースを作成
-        for (var i=0; i<PIECE_NUM_Y; ++i) {
-            for (var j=0; j<PIECE_NUM_X; ++j) {
-                // 数値
-                var number = nums[ i*PIECE_NUM_X+j ];
-                // ピースを生成してピースグループに追加
-                var piece = Piece(number).addChildTo(this.pieceGroup);
-                // 座標を設定
-                piece.x = j * 125 + PIECE_OFFSET_X;
-                piece.y = i * 125 + PIECE_OFFSET_Y;
-            }
-        }
     },
 });
 
 
-/*
- * ピースクラス
- */
-tm.define("Piece", {
-    superClass: "tm.app.Shape",
-
-    init: function(number) {
-        this.superInit(PIECE_WIDTH, PIECE_HEIGHT);
-        // 数値をセット
-        this.number = number;
-
-        this.setInteractive(true);
-        this.setBoundingType("rect");
-
-        var angle = tm.util.Random.randint(0, 360);
-        this.canvas.clearColor("hsl({0}, 80%, 70%)".format(angle));
-
-        this.label = tm.app.Label(number).addChildTo(this);
-        this.label
-            .setFontSize(70)
-            .setFontFamily(FONT_FAMILY_FLAT)
-            .setAlign("center")
-            .setBaseline("middle");
-    },
-});
