@@ -30,7 +30,7 @@ tm.main(function() {
     app.fitWindow();                            // 自動フィッティング有効
     app.background = "rgba(250, 250, 250, 1.0)";// 背景色
 
-    app.replaceScene( TitleScene() );    // シーン切り替え
+    app.replaceScene( GameScene() );    // シーン切り替え
 
     // 実行
     app.run();
@@ -74,10 +74,9 @@ tm.define("GameScene", {
                     if (this.number === self.currentNumber) {
                         // クリアかどうかの判定
                         if (self.currentNumber === PIECE_NUM) {
-                            // リザルト画面に遷移
-                            self.app.replaceScene(ResultScene({
-                                time: self.timerLabel.text,
-                            }));
+                            // 結果表示
+                            var time = (self.app.frame/self.app.fps)|0;
+                            alert("GameClear: {0}".format(time));
                         }
                         self.currentNumber += 1;// インクリメント
                         this.disable();         // ボタン無効
@@ -157,7 +156,7 @@ tm.define("Piece", {
             .setFontFamily(FONT_FAMILY_FLAT)
             .setAlign("center")
             .setBaseline("middle");
-        },
+    },
 
     disable: function() {
         this.setInteractive(false);
@@ -218,114 +217,5 @@ tm.define("CountdownScene", {
             });
     },
 });
-
-tm.define("TitleScene", {
-    superClass: "tm.app.Scene",
-
-    init: function() {
-        this.superInit();
-
-        this.fromJSON({
-            children: [
-                {
-                    type: "Label", name: "titleLabel",
-                    text: "FlaTM Touch",
-                    x: SCREEN_CENTER_X,
-                    y: 200,
-                    fillStyle: "#444",
-                    fontSize: 60,
-                    fontFamily: FONT_FAMILY_FLAT,
-                    align: "center",
-                    baseline: "middle",
-                },
-                {
-                    type: "Label", name: "nextLabel",
-                    text: "TOUCH START",
-                    x: SCREEN_CENTER_X,
-                    y: 650,
-                    fillStyle: "#444",
-                    fontSize: 26,
-                    fontFamily: FONT_FAMILY_FLAT,
-                    align: "center",
-                    baseline: "middle",
-                }
-            ]
-        });
-        
-        this.nextLabel.tweener
-            .fadeOut(500)
-            .fadeIn(1000)
-            .setLoop(true);
-    },
-    onpointingstart: function() {
-        this.app.replaceScene(GameScene());
-    },
-});
-
-tm.define("ResultScene", {
-    superClass: "tm.app.Scene",
-
-    init: function(param) {
-        this.superInit();
-
-        this.fromJSON({
-            children: [
-                {
-                    type: "Label", name: "timeLabel",
-                    x: SCREEN_CENTER_X,
-                    y: 320,
-                    fillStyle: "#888",
-                    fontSize: 128,
-                    fontFamily: FONT_FAMILY_FLAT,
-                    text: "99.999",
-                    align: "center",
-                },
-                {
-                    type: "FlatButton", name: "tweetButton",
-                    init: [
-                        {
-                            text: "TWEET",
-                            bgColor: "hsl(240, 80%, 70%)",
-                        }
-                    ],
-                    x: SCREEN_CENTER_X-160,
-                    y: 650,
-                },
-                {   
-                    type: "FlatButton", name: "backButton",
-                    init: [
-                        {
-                            text: "BACK",
-                            bgColor: "hsl(240, 0%, 70%)",
-                        }
-                    ],
-                    x: SCREEN_CENTER_X+160,
-                    y: 650,
-                },
-            ]
-        });
-
-        this.timeLabel.text = param.time;
-        
-        var self = this;
-        // tweet ボタン
-        this.tweetButton.onclick = function() {
-            var twitterURL = tm.social.Twitter.createURL({
-                type    : "tweet",
-                text    : "tmlib.js チュートリアルゲームです. Time: {time}".format(param),
-                hashtags: "tmlib,javascript,game",
-                url     : "http://tmlife.net/?p=9781", // or window.document.location.href
-            });
-            window.open(twitterURL);
-        };
-        // back ボタン
-        this.backButton.onpointingstart = function() {
-            self.app.replaceScene(TitleScene());
-        };
-    },
-});
-
-
-
 
 
