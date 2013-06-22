@@ -20,14 +20,6 @@ var PIECE_HEIGHT    = 120;              // ピースの高さ
 
 var FONT_FAMILY_FLAT= "'Helvetica-Light' 'Meiryo' sans-serif";  // フラットデザイン用フォント
 
-// アセット
-var ASSETS = {
-    "bgm": "sounds/bgm.mp3",
-    "pinponSE": "sounds/pinpon.mp3",
-    "booSE": "sounds/boo.mp3",
-    "clearSE": "sounds/clear.mp3",
-};
-
 /*
  * main
  */
@@ -38,15 +30,7 @@ tm.main(function() {
     app.fitWindow();                            // 自動フィッティング有効
     app.background = "rgba(250, 250, 250, 1.0)";// 背景色
 
-    // ローディング
-    var loading = tm.app.LoadingScene({
-        width: SCREEN_WIDTH,    // 幅
-        height: SCREEN_HEIGHT,  // 高さ
-        assets: ASSETS,         // アセット
-        nextScene: TitleScene,  // ローディング完了後のシーン
-        nextScene: GameScene,   
-    });
-    app.replaceScene( loading );    // シーン切り替え
+    app.replaceScene( TitleScene() );    // シーン切り替え
 
     // 実行
     app.run();
@@ -60,8 +44,6 @@ tm.define("GameScene", {
 
     init: function() {
         this.superInit();
-        // bgm 再生
-        tm.asset.AssetManager.get("bgm").play();
 
         var self = this;
 
@@ -96,17 +78,9 @@ tm.define("GameScene", {
                             self.app.replaceScene(ResultScene({
                                 time: self.timerLabel.text,
                             }));
-                            // クリア SE 再生
-                            tm.asset.AssetManager.get("clearSE").clone().play();
                         }
-                        // 正解 SE 再生
-                        tm.asset.AssetManager.get("pinponSE").clone().play();
                         self.currentNumber += 1;// インクリメント
                         this.disable();         // ボタン無効
-                    }
-                    else {
-                        // 不正解 SE 再生
-                        tm.asset.AssetManager.get("booSE").clone().play();
                     }
                 };
             }
