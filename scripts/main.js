@@ -104,7 +104,7 @@ tm.define("GameScene", {
         }).addChildTo(this);
         titleBtn.position.set(180, 880);
         titleBtn.onpointingend = function() {
-            self.app.replaceScene(TitleScene());
+            // TODO: replace title
         };
         // リスタートボタン
         var restartBtn = tm.app.FlatButton({
