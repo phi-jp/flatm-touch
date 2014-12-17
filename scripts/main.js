@@ -5,7 +5,7 @@
 /*
  * contant
  */
-var SCREEN_WIDTH    = 680;              // スクリーン幅
+var SCREEN_WIDTH    = 640;              // スクリーン幅
 var SCREEN_HEIGHT   = 960;              // スクリーン高さ
 var SCREEN_CENTER_X = SCREEN_WIDTH/2;   // スクリーン幅の半分
 var SCREEN_CENTER_Y = SCREEN_HEIGHT/2;  // スクリーン高さの半分
@@ -15,8 +15,8 @@ var PIECE_NUM_Y     = 5;                // ピースの行数
 var PIECE_NUM       = PIECE_NUM_X*PIECE_NUM_Y;  // ピース数
 var PIECE_OFFSET_X  = 90;               // ピースオフセットX　
 var PIECE_OFFSET_Y  = 240;              // ピースオフセットY
-var PIECE_WIDTH     = 120;              // ピースの幅
-var PIECE_HEIGHT    = 120;              // ピースの高さ
+var PIECE_WIDTH     = 110;              // ピースの幅
+var PIECE_HEIGHT    = 110;              // ピースの高さ
 
 var FONT_FAMILY_FLAT= "'Helvetica-Light' 'Meiryo' sans-serif";  // フラットデザイン用フォント
 
@@ -39,17 +39,50 @@ tm.main(function() {
     app.background = "rgba(250, 250, 250, 1.0)";// 背景色
 
     // ローディング
-    var loading = tm.app.LoadingScene({
+    var loading = tm.scene.LoadingScene({
         width: SCREEN_WIDTH,    // 幅
         height: SCREEN_HEIGHT,  // 高さ
         assets: ASSETS,         // アセット
-        nextScene: TitleScene,  // ローディング完了後のシーン
-        nextScene: GameScene,   
     });
     app.replaceScene( loading );    // シーン切り替え
 
+    loading.onload = function() {
+        app.replaceScene(MainScene());
+    };
+
     // 実行
     app.run();
+});
+
+tm.define("MainScene", {
+    superClass: "tm.scene.ManagerScene",
+
+    init: function() {
+        this.superInit({
+            scenes: [
+                {
+                    className: "tm.scene.TitleScene",
+                    arguments: {
+                        title: "FlaTM Touch",
+                    },
+                    label: "title",
+                },
+                {
+                    className: "GameScene",
+                    arguments: {
+                    },
+                    label: "game",
+                },
+                {
+                    className: "tm.scene.ResultScene",
+                    arguments: {
+                        score: 0,
+                    },
+                    nextLabel: "title",
+                },
+            ]
+        });
+    },
 });
 
 /*
@@ -84,18 +117,24 @@ tm.define("GameScene", {
                 // ピースを生成してピースグループに追加
                 var piece = Piece(number).addChildTo(this.pieceGroup);
                 // 座標を設定
-                piece.x = j * 125 + PIECE_OFFSET_X;
-                piece.y = i * 125 + PIECE_OFFSET_Y;
+                piece.x = j * 115 + PIECE_OFFSET_X;
+                piece.y = i * 115 + PIECE_OFFSET_Y;
                 // タッチ時のイベントリスナーを登録
                 piece.onpointingstart = function() {
                     // 正解かどうかの判定
                     if (this.number === self.currentNumber) {
                         // クリアかどうかの判定
                         if (self.currentNumber === PIECE_NUM) {
-                            // リザルト画面に遷移
-                            self.app.replaceScene(ResultScene({
-                                time: self.timerLabel.text,
-                            }));
+                            // 次のシーンへ
+                            var score = Math.max(60-Number(self.timerLabel.text), 0)*100;
+                            self.nextArguments = {
+                                score   : score.floor(),
+                                message : "tmlib.js チュートリアルゲームです. Time: {0}".format(self.timerLabel.text),
+                                hashtags: "tmlib,javascript,game",
+                                url     : "http://phi-jp.github.io/tmlib.js/", // or window.document.location.href
+                            };
+                            self.app.popScene();
+
                             // クリア SE 再生
                             tm.asset.AssetManager.get("clearSE").clone().play();
                         }
@@ -115,7 +154,7 @@ tm.define("GameScene", {
         // タイマーラベル
         this.timerLabel = tm.app.Label("").addChildTo(this);
         this.timerLabel
-            .setPosition(650, 160)
+            .setPosition(600, 160)
             .setFillStyle("#444")
             .setAlign("right")
             .setBaseline("bottom")
@@ -124,23 +163,24 @@ tm.define("GameScene", {
 
         // タイトルボタン
         var titleBtn = tm.app.FlatButton({
-            width: 300,
+            width: 260,
             height: 100,
             text: "TITLE",
             bgColor: "#888",
         }).addChildTo(this);
-        titleBtn.position.set(180, 880);
+        titleBtn.position.set(SCREEN_CENTER_X-150, 880);
         titleBtn.onpointingend = function() {
-            self.app.replaceScene(TitleScene());
+            self.nextLabel = "title";
+            self.app.popScene();
         };
         // リスタートボタン
         var restartBtn = tm.app.FlatButton({
-            width: 300,
+            width: 260,
             height: 100,
             text: "RESTART",
             bgColor: "#888",
         }).addChildTo(this);
-        restartBtn.position.set(500, 880);
+        restartBtn.position.set(SCREEN_CENTER_X+150, 880);
         restartBtn.onpointingend = function() {
             self.app.replaceScene(GameScene());
         };
@@ -167,7 +207,10 @@ tm.define("Piece", {
     superClass: "tm.app.Shape",
 
     init: function(number) {
-        this.superInit(PIECE_WIDTH, PIECE_HEIGHT);
+        this.superInit({
+            width: PIECE_WIDTH,
+            height: PIECE_HEIGHT
+        });
         // 数値をセット
         this.number = number;
 
@@ -206,9 +249,12 @@ tm.define("CountdownScene", {
         this.superInit();
         var self = this;
 
-        var filter = tm.app.Shape(SCREEN_WIDTH, SCREEN_HEIGHT).addChildTo(this);
+        var filter = tm.app.Shape({
+            width: SCREEN_WIDTH,
+            height: SCREEN_HEIGHT,
+            bgColor: "rgba(250, 250, 250, 1.0)",
+        }).addChildTo(this);
         filter.origin.set(0, 0);
-        filter.canvas.clearColor("rgba(250, 250, 250, 1.0)");
 
         var label = tm.app.Label(3).addChildTo(this);
         label
@@ -244,114 +290,3 @@ tm.define("CountdownScene", {
             });
     },
 });
-
-tm.define("TitleScene", {
-    superClass: "tm.app.Scene",
-
-    init: function() {
-        this.superInit();
-
-        this.fromJSON({
-            children: [
-                {
-                    type: "Label", name: "titleLabel",
-                    text: "FlaTM Touch",
-                    x: SCREEN_CENTER_X,
-                    y: 200,
-                    fillStyle: "#444",
-                    fontSize: 60,
-                    fontFamily: FONT_FAMILY_FLAT,
-                    align: "center",
-                    baseline: "middle",
-                },
-                {
-                    type: "Label", name: "nextLabel",
-                    text: "TOUCH START",
-                    x: SCREEN_CENTER_X,
-                    y: 650,
-                    fillStyle: "#444",
-                    fontSize: 26,
-                    fontFamily: FONT_FAMILY_FLAT,
-                    align: "center",
-                    baseline: "middle",
-                }
-            ]
-        });
-        
-        this.nextLabel.tweener
-            .fadeOut(500)
-            .fadeIn(1000)
-            .setLoop(true);
-    },
-    onpointingstart: function() {
-        this.app.replaceScene(GameScene());
-    },
-});
-
-tm.define("ResultScene", {
-    superClass: "tm.app.Scene",
-
-    init: function(param) {
-        this.superInit();
-
-        this.fromJSON({
-            children: [
-                {
-                    type: "Label", name: "timeLabel",
-                    x: SCREEN_CENTER_X,
-                    y: 320,
-                    fillStyle: "#888",
-                    fontSize: 128,
-                    fontFamily: FONT_FAMILY_FLAT,
-                    text: "99.999",
-                    align: "center",
-                },
-                {
-                    type: "FlatButton", name: "tweetButton",
-                    init: [
-                        {
-                            text: "TWEET",
-                            bgColor: "hsl(240, 80%, 70%)",
-                        }
-                    ],
-                    x: SCREEN_CENTER_X-160,
-                    y: 650,
-                },
-                {   
-                    type: "FlatButton", name: "backButton",
-                    init: [
-                        {
-                            text: "BACK",
-                            bgColor: "hsl(240, 0%, 70%)",
-                        }
-                    ],
-                    x: SCREEN_CENTER_X+160,
-                    y: 650,
-                },
-            ]
-        });
-
-        this.timeLabel.text = param.time;
-        
-        var self = this;
-        // tweet ボタン
-        this.tweetButton.onclick = function() {
-            var twitterURL = tm.social.Twitter.createURL({
-                type    : "tweet",
-                text    : "tmlib.js チュートリアルゲームです. Time: {time}".format(param),
-                hashtags: "tmlib,javascript,game",
-                url     : "http://tmlife.net/?p=9781", // or window.document.location.href
-            });
-            window.open(twitterURL);
-        };
-        // back ボタン
-        this.backButton.onpointingstart = function() {
-            self.app.replaceScene(TitleScene());
-        };
-    },
-});
-
-
-
-
-
